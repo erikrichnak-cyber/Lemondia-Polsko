@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lemondia - Nabídky (Synchronizovaný dashboard)</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f4f6f8; color: #1a1a1a; margin: 0; padding: 15px; }
+    
+    .main-content { max-width: 1600px; margin: 0 auto; }
+
+    /* 1. LOGO A HLAVIČKA (skompaktnené) */
+    .header { display: flex; align-items: center; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid #e0e0e0; }
+    .logo-img { height: 42px; object-fit: contain; } /* Mierne zmenšené */
+    .logo-fallback { font-size: 24px; font-weight: 800; color: #111; letter-spacing: -1px; display: flex; align-items: center; gap: 8px; }
+
+    /* 2. INFO PRUH PRE KURZ (presunuté pod hlavičku) */
+    .info-banner { background: #eef5fb; color: #005bb5; padding: 10px 15px; font-size: 13px; text-align: center; border-radius: 8px; margin-bottom: 20px; border: 1px solid #cce0ff; display: flex; justify-content: center; align-items: center; gap: 8px; }
+    .info-banner span { font-weight: 700; background: #cce0ff; padding: 2px 8px; border-radius: 12px; }
+
+    /* GRID PRE HOTELY */
+    .grid-container { 
+      display: grid; 
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); 
+      gap: 15px; /* Menšia medzera medzi kartami */
+      align-items: start; 
+    }
+    
+    @media (min-width: 1550px) {
+      .grid-container { grid-template-columns: repeat(4, 1fr); }
+    }
+    
+    .hotel-wrapper { background: #fff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.04); border: 1px solid #eaeaea; overflow: hidden; display: flex; flex-direction: column; }
+    .hotel-wrapper.placeholder { background: #f9f9f9; border: 2px dashed #ddd; justify-content: center; align-items: center; min-height: 500px; box-shadow: none; }
+    .placeholder-text { text-align: center; color: #888; font-size: 15px; }
+    
+    /* SKOMPAKTNENIE KARIET */
+    .hotel-gallery-cover { position: relative; height: 140px; background-color: #ddd; background-size: cover; background-position: center; cursor: pointer; transition: opacity 0.2s; }
+    .hotel-gallery-cover:hover { opacity: 0.9; }
+    .gallery-badge { position: absolute; bottom: 8px; right: 8px; background: rgba(0,0,0,0.7); color: #fff; padding: 4px 10px; border-radius: 16px; font-size: 11px; font-weight: bold; display: flex; align-items: center; gap: 4px; }
+    
+    .summary-section { padding: 15px; display: flex; flex-direction: column; }
+    
+    .hotel-header { margin-bottom: 12px; }
+    .hotel-title-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px; }
+    .hotel-title { font-size: 18px; font-weight: bold; margin: 0; line-height: 1.2; }
+    .web-link { font-size: 12px; color: #0066cc; text-decoration: none; background: #eef5fb; padding: 4px 8px; border-radius: 6px; font-weight: 600; white-space: nowrap; margin-left: 8px; }
+    .web-link:hover { background: #dceaf7; }
+    
+    .map-link { color: #555; text-decoration: underline; text-underline-offset: 3px; font-size: 12px;}
+    .map-link:hover { color: #111; }
+    .hotel-subtitle { color: #666; font-size: 12px; margin: 0; line-height: 1.4; }
+    
+    .summary-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; color: #444; align-items: center; }
+    .summary-total { font-size: 16px; font-weight: bold; margin: 10px 0; display: flex; justify-content: space-between; align-items: baseline; border-top: 1px solid #eaeaea; padding-top: 10px; }
+    
+    .currency-primary { font-weight: bold; color: #111; }
+    .currency-secondary { font-size: 11px; color: #888; font-weight: normal; margin-left: 6px; }
+    
+    .item-price-val { font-weight: 400; color: #111; font-size: 13px; }
+    
+    .attachments-box { background: #f0f7ff; border: 1px solid #cce0ff; border-radius: 8px; padding: 10px; margin-bottom: 12px; box-sizing: border-box; }
+    .attachments-title { font-size: 12px; font-weight: bold; color: #005bb5; margin: 0 0 8px 0; display: flex; align-items: center; gap: 6px; }
+    .attachment-list { display: flex; flex-direction: column; gap: 6px; }
+    .attachment-link { font-size: 11px; color: #005bb5; text-decoration: none; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+    .attachment-link:hover { text-decoration: underline; }
+
+    .btn-toggle { display: block; width: 100%; padding: 10px; text-align: center; border-radius: 8px; font-weight: 600; cursor: pointer; border: 1px solid #ddd; font-size: 13px; background: #fff; color: #333; transition: all 0.2s; margin-top: auto; }
+    .btn-toggle:hover { background: #f9f9f9; border-color: #ccc; }
+    
+    /* ZAROVNANIE SEKCIÍ DETAILOV */
+    .details-section { 
+      padding: 15px; 
+      background: #fafafa; 
+      border-top: 1px solid #eaeaea; 
+      display: none;
+    }
+
+    .card { background: #fff; border-radius: 8px; padding: 12px; margin-bottom: 12px; border: 1px solid #eaeaea; box-sizing: border-box; display: flex; flex-direction: column; }
+    
+    .section-title { font-size: 13px; font-weight: bold; margin: 0 0 10px 0; padding-bottom: 8px; border-bottom: 1px solid #eaeaea; display: flex; justify-content: space-between; align-items: flex-start; }
+    .section-title-sum { font-size: 14px; font-weight: bold; color: #111; text-align: right; margin-left: 10px; }
+    .section-subtitle { font-weight: normal; color: #888; font-size: 11px; display: block; margin-top: 4px; }
+    
+    .item-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #f5f5f5; align-items: flex-start; gap: 10px; }
+    .item-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .item-details { flex: 1; min-width: 0; }
+    .item-name { color: #111; font-weight: 600; font-size: 12px; margin-bottom: 3px; line-height: 1.3; }
+    .item-desc { color: #777; font-size: 11px; line-height: 1.4; word-wrap: break-word; }
+    .item-price-box { text-align: right; white-space: nowrap; flex-shrink: 0; padding-top: 2px; }
+    
+    .date-separator {
+      background-color: #f0f0f0; color: #555; font-size: 11px; font-weight: bold; padding: 4px 10px;
+      margin: 8px -12px 5px -12px; border-top: 1px solid #eaeaea; border-bottom: 1px solid #eaeaea;
+    }
+    .card-stravovani .item-row { padding-left: 8px; }
+
+    .tag { background: #eaf8e1; color: #2e7d32; padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; display: inline-block; margin-bottom: 10px; }
+
+    /* LIGHTBOX GALÉRIA */
+    #lightbox { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.9); align-items: center; justify-content: center; }
+    #lightbox-img { max-width: 90%; max-height: 80vh; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+    .lb-close { position: absolute; top: 20px; right: 30px; color: #fff; font-size: 40px; font-weight: bold; cursor: pointer; z-index: 1001; }
+    .lb-prev, .lb-next { position: absolute; top: 50%; transform: translateY(-50%); color: #fff; font-size: 50px; font-weight: bold; cursor: pointer; padding: 20px; user-select: none; z-index: 1001; }
+    .lb-prev { left: 20px; }
+    .lb-next { right: 20px; }
+    .lb-counter { position: absolute; bottom: 30px; color: #fff; font-size: 16px; font-weight: bold; }
+  </style>
+</head>
+<body>
+
+  <div class="main-content">
+    
+    <div class="header">
+      <img src="lemondia_logo.png" alt="Lemondia" class="logo-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+      <div class="logo-fallback" style="display: none;"><span style="background: #c6f050; padding: 4px 10px; border-radius: 20px; color: black;">🍋</span> Lemondia</div>
+    </div>
+
+    <div class="info-banner">
+      💡 Všechny ceny v nabídkách jsou přepočteny jednotným kurzem <span>1 PLN = 5,90 CZK</span>
+    </div>
+
+    <div class="grid-container">
+      
+      <div class="hotel-wrapper" id="wrapper-hotel1">
+        <div class="hotel-gallery-cover" style="background-image: url('Blue_mountain_1.jpg');" onclick="openGallery('blue')">
+          <div class="gallery-badge">📷 5 fotek</div>
+        </div>
+
+        <div class="summary-section">
+          <div class="tag">PRIMÁRNÍ TERMÍN • 17. 9. – 18. 9.</div>
+          
+          <div class="hotel-header">
+            <div class="hotel-title-row">
+              <h2 class="hotel-title">Blue Mountain Resort</h2>
+              <a href="https://blue-mountain-resort.pl/" target="_blank" class="web-link">🌐 Web</a>
+            </div>
+            <p class="hotel-subtitle">
+              <a href="#" target="_blank" class="map-link">📍 Szklarska Poręba, Polsko</a><br>👥 110 hostů
+            </p>
+          </div>
+          
+          <hr style="border:0; border-top:1px solid #eaeaea; margin: 10px 0;">
+          
+          <div class="summary-row">
+            <div>🍽️ Stravování</div>
+            <div style="text-align: right;"><span class="currency-primary">276 960 CZK</span><br><span class="currency-secondary">~46 942 PLN</span></div>
+          </div>
+          <div class="summary-row">
+            <div>🏢 Prostory</div>
+            <div style="text-align: right;"><span class="currency-primary">9 440 CZK</span><br><span class="currency-secondary">~1 600 PLN</span></div>
+          </div>
+          <div class="summary-row">
+            <div>🛏️ Ubytování</div>
+            <div style="text-align: right;"><span class="currency-primary">214 854 CZK</span><br><span class="currency-secondary">~36 416 PLN</span></div>
+          </div>
+          
+          <div class="summary-total">
+            <div>Celkem</div>
+            <div style="text-align: right;"><span class="currency-primary">501 254 CZK</span><br><span class="currency-secondary">~84 959 PLN</span></div>
+          </div>
+
+          <div class="attachments-box">
+            <h3 class="attachments-title">📎 Přílohy k nabídce</h3>
+            <div class="attachment-list">
+              <a href="#" target="_blank" class="attachment-link">📄 Originální kalkulace (PDF)</a>
+              <a href="#" target="_blank" class="attachment-link">📄 Menu: Lunch Bufet (PDF)</a>
+              <a href="#" target="_blank" class="attachment-link">📄 Menu: Banketová večeře (PDF)</a>
+              <a href="#" target="_blank" class="attachment-link">📄 Nabídka: Coffee break (PDF)</a>
+              <a href="#" target="_blank" class="attachment-link">📄 Nabídka: Open Bar (PDF)</a>
+            </div>
+          </div>
+
+          <button class="btn-toggle" onclick="toggleDetails('hotel1', this)">Zobrazit detail</button>
+        </div>
+
+        <div class="details-section" id="hotel1">
+          <div class="card card-ubytovani">
+            <h3 class="section-title">
+              <div>🛏️ Ubytování <span class="section-subtitle">1 noc</span></div>
+              <div class="section-title-sum">214 854 CZK</div>
+            </h3>
+            <div class="item-row">
+              <div class="item-details"><div class="item-name">Jednolůžkový pokoj</div><div class="item-desc">80 pok. • 2 187 CZK/noc</div></div>
+              <div class="item-price-box"><div class="item-price-val">174 970 CZK</div></div>
+            </div>
+            <div class="item-row">
+              <div class="item-details"><div class="item-name">Dvoulůžkový pokoj</div><div class="item-desc">15 pok. • 2 659 CZK/noc</div></div>
+              <div class="item-price-box"><div class="item-price-val">39 884 CZK</div></div>
+            </div>
+          </div>
+
+          <div class="card card-prostory">
+            <h3 class="section-title">
+              <div>🏢 Prostory <span class="section-subtitle">2 dny</span></div>
+              <div class="section-title-sum">9 440 CZK</div>
+            </h3>
+            <div class="item-row">
+              <div class="item-details"><div class="item-name">Sál (17. 9.)</div><div class="item-desc">Celodenní hlavní sál</div></div>
+              <div class="item-price-box"><div class="item-price-val">4 720 CZK</div></div>
+            </div>
+            <div class="item-row">
+              <div class="item-details"><div class="item-name">Sál (18. 9.)</div><div class="item-desc">Půldenní hlavní sál</div></div>
+              <div class="item-price-box"><div class="item-price-val">4 720 CZK</div></div>
+            </div>
+          </div>
+
+          <div class="card card-stravovani">
+            <h3 class="section-title">
+              <div>🍽️ Stravování <span class="section-subtitle">110 porcí</span></div>
+              <div class="section-title-sum">276 960 CZK</div>
+            </h3>
+            
+            <div class="date-separator">📅 17. 9. 2026</div>
+            <div class="item-row">
+              <div class="item-details"><div class="item-name">Dopolední coffee break</div><div class="item-desc">435 CZK (~74 PLN) / os. (celodenní)</div></div>
+              <div class="item-price-box"><div class="item-price-val">47 896 CZK</div></div>
+            </div>
+            <div class="item-row">
+              <div class="item-details"><div class="item-name">Oběd + nápoje</div><div class="item-desc">719 CZK (~122 PLN) / os.</div></div>
+              <div class="item-price-box"><div class="item-price-val">79 048 CZK</div></div>
+            </div>
+            <div class="item-row">
+              <div class="item-details"><div class="item-name">Odpolední coffee break</div><div class="item-desc">Zahrnuto v dopoledním paušálu</div></div>
+              <div class="item-price-box"><div class="item-price-val" style="color: #2e7d32;">V ceně</div></div>
+            </div>
+            <div class="item-row">
+              <div class="item-details"><div class="item-name">Večeře</div><div class="item-desc">892 CZK (~151 PLN) / os.</div></div>
+              <div class="item-price-box"><div class="item-price-val">98 129 CZK</div></div>
+            </div>
+            
+            <div class="date-separator">📅 18. 9. 2026</div>
+            <div class="item-row">
+              <div class="item-details"><div class="item-name">Snídaně</div><div class="item-desc">Součást ubytování</div></div>
+              <div class="item-price-box"><div class="item-price-val" style="color: #2e7d32;">Zdarma</div></div>
+            </div>
+            <div class="item-row">
+              <div class="item-details"><div class="item-name">Dop. coffee break (Premium)</div><div class="item-desc">472 CZK (~80 PLN) / os.</div></div>
+              <div class="item-price-box"><div class="item-price-val">51 888 CZK</div></div>
+            </div>
+          </div>
+
+          <div class="card extra">
+            <h3 class="section-title" style="color: #b37700; border-bottom-color: #f2e3c6;">
+              <div>✨ Navíc <span class="section-subtitle" style="color: #b37700;">Nezahrnuto v celku</span></div>
+            </h3>
+            <div class="item-row">
+              <div class="item-details"><div class="item-name">Open bar (Den 1)</div><div class="item-desc">1 088 CZK (~184 PLN) / os.</div></div>
+              <div class="item-price-box"><div class="item-price-val" style="color: #b37700;">+ 119 741 CZK</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hotel-wrapper" id="wrapper-hotel2">
+        <div class="hotel-gallery-cover" style="background-image: url('Green_mountain_1.jpg');" onclick="openGallery('green')">
+          <div class="gallery-badge">📷 5 fotek</div>
+        </div>
+
+        <div class="summary-section">
+          <div class="tag">PRIMÁRNÍ TERMÍN • 17. 9. – 18. 9.</div>
+          
+          <div class="hotel-header">
+            <div class="hotel-title-row">
+              <h2 class="hotel-title">Green Mountain</h2>
+              <a href="https://www.green-mountain.pl/" target="_blank" class="web-link">🌐 Web</a>
+            </div>
+            <p class="hotel-subtitle">
+              <a href="#" target="_blank" class="map-link">📍 Karpacz, Polsko</a><br>👥 110 hostů
+            </p>
+          </div>
+          
+          <hr style="border:0; border-top:1px solid #eaeaea; margin: 10px 0;">
+          
+          <div class="summary-row">
+            <div>🍽️ Stravování</div>
+            <div style="text-align: right;"><span class="currency-primary">262 391 CZK</span><br><span class="currency-secondary">~44 473 PLN</span></div>
+          </div>
+          <div class="summary-row">
+            <div>🏢 Prostory</div>
+            <div style="text-align: right;"><span class="currency-primary">29 028 CZK</span><br><span class="currency-secondary">~4 920 PLN</span></div>
+          </div>
+          <div class="summary-row">
+            <div>🛏️ Ubytování</div>
+            <div style="text-align: right;"><span class="currency-primary">287 684 CZK</span><br><span class="currency-secondary">~48 760 PLN</span></div>
+          </div>
+          
+          <div class="summary-total">
+            <div>Celkem</div>
+            <div style="text-align: right;"><span class="currency-primary">579 103 CZK</span><br><span class="currency-secondary">~98 153 PLN</span></div>
+          </div>
+
+          <div class="attachments-box">
+            <h3 class="attachments-title">📎 Přílohy k nabídce</h3>
+            <div class="attachment-list">
+              <a href="#" target="_blank" class="attachment-link">📄 Originální kalkulace (PDF)</a>
+            </div>
+          </div>
+
+          <button class="btn-toggle" onclick="toggleDetails('hotel2', this)">Zobrazit detail</button>
+        </div>
+
+        <div class="details-section" id="hotel2">
+          <div class="card card-ubytovani">
+            <h3 class="section-title">
+              <div>🛏️ Ubytování <span class="section-subtitle">1 noc</span></div>
+              <div class="section-title-sum">287 684 CZK</div>
+            </h3>
+            <div class="item-row">
+              <div class="item-details"><div class="item-name">Jednolůžkový pokoj</div><div class="item-desc">80 pok. • 2 985 CZK/noc</div></div>
+              <div class="item-price-box"><div class="item-price-val">238 832 CZK</div></div>
+            </div>
+            <div class="item-row">
+              <div class="item-details"><div class="item-name">Dvoulůžkový pokoj</div><div class="item-desc">15 pok. • 3 257 CZK/noc</div></div>
+              <div class="item-price-box"><div class="item-price-val">48 852 CZK</div></div>
+            </div>
+          </div>
+
+          <div class="card card-prostory">
+            <h3 class="section-title">
+              <div>🏢 Prostory <span class="section-subtitle">2 dny</span></div>
+              <div class="section-title-sum">29 028 CZK</div>
+            </h3>
+            <div class="item-row">
+              <div class="item-details"><div class="item-name">Sál (17. 9.)</div><div class="item-desc">Denní konferenční program</div></div>
+              <div class="item-price-box"><div class="item-price-val">7 257 CZK</div></div>
+            </div>
+            <div class="item-row">
+              <div class="item-details"><div class="item-name">Večerní program (17. 9.)</div><div class="item-desc">Párty prostor / Sál pro večer</div></div>
+              <div class="item-price-box"><div class="item-price-val">14 514 CZK</div></div>
+            </div>
+            <div class="item-row">
+              <div class="item-details"><div class="item-name">Sál (18. 9.)</div><div class="item-desc">Půldenní konferenční sál</div></div>
+              <div class="item-price-box"><div class="item-price-val">7 257 CZK</div></div>
+            </div>
+          </div>
+
+          <div class="card card-stravovani">
+            <h3 class="section-title">
+              <div>🍽️ Stravování <span class="section-subtitle">110 porcí</span></div>
+              <div class="section-title-sum">262 391 CZK</div>
+            </h3>
+            
+            <div class="date-separator">📅 17. 9. 2026</div>
+            <div class="item-row">
+              <div class="item-details"><div class="item-name">Dopolední coffee break Standard</div><div class="item-desc">409 CZK (~69 PLN) / os. (celodenní)</div></div>
+              <div class="item-price-box"><div class="item-price-val">44 982 CZK</div></div>
+            </div>
+            <div class="item-row">
+              <div class="item-details"><div class="item-name">Oběd</div><div class="item-desc">688 CZK (~117 PLN) / os.</div></div>
+              <div class="item-price-box"><div class="item-price-val">75 699 CZK</div></div>
+            </div>
+            <div class="item-row">
+              <div class="item-details"><div class="item-name">Odpolední coffee break Standard</div><div class="item-desc">Zahrnuto v dopoledním paušálu</div></div>
+              <div class="item-price-box"><div class="item-price-val" style="color: #2e7d32;">V ceně</div></div>
+            </div>
+            <div class="item-row">
+              <div class="item-details"><div class="item-name">Slavnostní večeře</div><div class="item-desc">879 CZK (~149 PLN) / os.</div></div>
+              <div class="item-price-box"><div class="item-price-val">96 727 CZK</div></div>
+            </div>
+            
+            <div class="date-separator">📅 18. 9. 2026</div>
+            <div class="item-row">
+              <div class="item-details"><div class="item-name">Snídaně</div><div class="item-desc">V ceně ubytování</div></div>
+              <div class="item-price-box"><div class="item-price-val" style="color: #2e7d32;">Zdarma</div></div>
+            </div>
+            <div class="item-row">
+              <div class="item-details"><div class="item-name">Coffee break Standard</div><div class="item-desc">409 CZK (~69 PLN) / os.</div></div>
+              <div class="item-price-box"><div class="item-price-val">44 982 CZK</div></div>
+            </div>
+          </div>
+
+          <div class="card extra">
+            <h3 class="section-title" style="color: #b37700; border-bottom-color: #f2e3c6;">
+              <div>✨ Navíc <span class="section-subtitle" style="color: #b37700;">Nezahrnuto v celku</span></div>
+            </h3>
+            <div class="item-row">
+              <div class="item-details"><div class="item-name">Open bar (Den 1)</div><div class="item-desc">918 CZK (~156 PLN) / os.</div></div>
+              <div class="item-price-box"><div class="item-price-val" style="color: #b37700;">+ 100 978 CZK</div></div>
+            </div>
+            <div class="item-row">
+              <div class="item-details"><div class="item-name">Služby DJ (Den 1)</div><div class="item-desc">Hudební produkce na večer</div></div>
+              <div class="item-price-box"><div class="item-price-val" style="color: #b37700;">+ 30 043 CZK</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hotel-wrapper placeholder">
+        <div class="placeholder-text">
+          <span style="font-size: 32px; display: block; margin-bottom: 12px;">⏳</span>Čekáme na další nabídky...
+        </div>
+      </div>
+
+      <div class="hotel-wrapper placeholder">
+        <div class="placeholder-text">
+          <span style="font-size: 32px; display: block; margin-bottom: 12px;">⏳</span>Čekáme na další nabídky...
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div id="lightbox">
+    <span class="lb-close" onclick="closeGallery()">×</span>
+    <span class="lb-prev" onclick="changeImage(-1)">❮</span>
+    <img id="lightbox-img" src="">
+    <span class="lb-next" onclick="changeImage(1)">❯</span>
+    <div class="lb-counter" id="lb-counter">1 / 5</div>
+  </div>
+
+  <script>
+    const galleryData = {
+      'blue': [
+        'Blue_mountain_1.jpg',
+        'Blue_mountain_2.jpg',
+        'Blue_mountain_3.jpg',
+        'Blue_mountain_4.jpg',
+        'Blue_mountain_5.jpg'
+      ],
+      'green': [
+        'Green_mountain_1.jpg',
+        'Green_mountain_2.jpg',
+        'Green_mountain_3.jpg',
+        'Green_mountain_4.jpg',
+        'Green_mountain_5.jpg'
+      ]
+    };
+
+    let currentHotel = '';
+    let currentIndex = 0;
+
+    function openGallery(hotelKey) {
+      if (!galleryData[hotelKey]) return;
+      currentHotel = hotelKey;
+      currentIndex = 0;
+      updateLightboxImage();
+      document.getElementById('lightbox').style.display = 'flex';
+    }
+
+    function closeGallery() {
+      document.getElementById('lightbox').style.display = 'none';
+    }
+
+    function changeImage(step) {
+      if (!currentHotel) return;
+      currentIndex += step;
+      if (currentIndex >= galleryData[currentHotel].length) currentIndex = 0;
+      if (currentIndex < 0) currentIndex = galleryData[currentHotel].length - 1;
+      updateLightboxImage();
+    }
+
+    function updateLightboxImage() {
+      document.getElementById('lightbox-img').src = galleryData[currentHotel][currentIndex];
+      document.getElementById('lb-counter').innerText = (currentIndex + 1) + " / " + galleryData[currentHotel].length;
+    }
+
+    document.getElementById('lightbox').addEventListener('click', function(e) {
+      if(e.target === this) closeGallery();
+    });
+
+    document.addEventListener('keydown', function(e) {
+      const lightbox = document.getElementById('lightbox');
+      if (lightbox.style.display === 'flex') {
+        if (e.key === 'Escape') {
+          closeGallery();
+        } else if (e.key === 'ArrowRight') {
+          changeImage(1);
+        } else if (e.key === 'ArrowLeft') {
+          changeImage(-1);
+        }
+      }
+    });
+
+    function syncSummaryHeights() {
+      const summaries = document.querySelectorAll('.summary-section');
+      let maxH = 0;
+      summaries.forEach(s => { s.style.minHeight = '0px'; });
+      summaries.forEach(s => { if (s.offsetHeight > maxH) maxH = s.offsetHeight; });
+      summaries.forEach(s => { s.style.minHeight = maxH + 'px'; });
+    }
+
+    window.addEventListener('load', syncSummaryHeights);
+    window.addEventListener('resize', syncSummaryHeights);
+
+    function toggleDetails(hotelId, btn) {
+      const detailsSection = document.getElementById(hotelId);
+      const isOpening = detailsSection.style.display !== 'block';
+
+      if (isOpening) {
+        detailsSection.style.display = 'block';
+        btn.innerHTML = 'Skrýt detail nabídky';
+        syncCardHeightsInRow(hotelId);
+      } else {
+        detailsSection.style.display = 'none';
+        btn.innerHTML = 'Zobrazit detail nabídky';
+        resetCardHeightsInRow(hotelId);
+      }
+    }
+
+    function syncCardHeightsInRow(sourceHotelId) {
+      const allWrappers = document.querySelectorAll('.grid-container > .hotel-wrapper');
+      const sourceWrapper = document.getElementById('wrapper-' + sourceHotelId);
+      if (!sourceWrapper) return;
+
+      let sourceIndex = -1;
+      for (let i = 0; i < allWrappers.length; i++) {
+        if (allWrappers[i] === sourceWrapper) { sourceIndex = i; break; }
+      }
+      if (sourceIndex === -1) return;
+
+      const container = document.querySelector('.grid-container');
+      const gridStyles = window.getComputedStyle(container);
+      const gridCols = gridStyles.getPropertyValue('grid-template-columns').split(' ').length;
+
+      const rowStart = sourceIndex - (sourceIndex % gridCols);
+      const rowEnd = Math.min(rowStart + gridCols, allWrappers.length);
+
+      const classNames = ['card-ubytovani', 'card-prostory', 'card-stravovani', 'card.extra'];
+      
+      classNames.forEach(className => {
+        let maxHeight = 0;
+        for (let i = rowStart; i < rowEnd; i++) {
+          const details = allWrappers[i].querySelector('.details-section');
+          if (details && window.getComputedStyle(details).display === 'block') {
+            const card = details.querySelector('.' + className.replace('.', ''));
+            if (card) {
+              card.style.height = 'auto';
+              maxHeight = Math.max(maxHeight, card.offsetHeight);
+            }
+          }
+        }
+        for (let i = rowStart; i < rowEnd; i++) {
+          const details = allWrappers[i].querySelector('.details-section');
+          if (details && window.getComputedStyle(details).display === 'block') {
+            const card = details.querySelector('.' + className.replace('.', ''));
+            if (card) { card.style.height = maxHeight + 'px'; }
+          }
+        }
+      });
+    }
+
+    function resetCardHeightsInRow(hotelId) {
+      const detailsSection = document.getElementById(hotelId);
+      const cards = detailsSection.querySelectorAll('.card');
+      cards.forEach(card => { card.style.height = 'auto'; });
+    }
+
+    window.addEventListener('resize', function() {
+      const openDetails = document.querySelectorAll('.details-section[style*="display: block"]');
+      openDetails.forEach(details => { syncCardHeightsInRow(details.id); });
+    });
+  </script>
+</body>
+</html>
