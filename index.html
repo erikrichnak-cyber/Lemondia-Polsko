@@ -396,7 +396,7 @@
           
           <div class="hotel-header">
             <div class="hotel-title-row">
-              <h2 class="hotel-title">Elements Hotel &amp; Spa</h2>
+              <h2 class="hotel-title">Elements Hotel & Spa</h2>
               <a href="https://www.elements-hotel.pl/" target="_blank" class="web-link">🌐 Web</a>
             </div>
             <p class="hotel-subtitle">
@@ -516,9 +516,123 @@
         </div>
       </div>
 
-      <div class="hotel-wrapper placeholder">
-        <div class="placeholder-text">
-          <span style="font-size: 32px; display: block; margin-bottom: 12px;">⏳</span>Čekáme na další nabídky...
+      <div class="hotel-wrapper" id="wrapper-hotel4">
+        <div class="hotel-gallery-cover" style="background-image: url('Golebiewski_1.jpg');" onclick="openGallery('golebiewski')">
+          <div class="gallery-badge">📷 5 fotek</div>
+        </div>
+
+        <div class="summary-section">
+          <div class="tag">PRIMÁRNÍ TERMÍN • 17. 9. – 18. 9.</div>
+          
+          <div class="hotel-header">
+            <div class="hotel-title-row">
+              <h2 class="hotel-title">Hotel Gołębiewski</h2>
+              <a href="https://www.golebiewski.pl/karpacz" target="_blank" class="web-link">🌐 Web</a>
+            </div>
+            <p class="hotel-subtitle">
+              <a href="https://www.google.com/maps/search/?api=1&query=Green+Mountain+Karpacz" target="_blank" class="map-link">📍 Karpacz, Polsko</a><br>👥 110 hostů
+            </p>
+          </div>
+          
+          <hr style="border:0; border-top:1px solid #eaeaea; margin: 10px 0;">
+          
+          <div class="summary-row">
+            <div>🍽️ Stravování</div>
+            <div style="text-align: right;"><span class="currency-primary">200 152 CZK</span><br><span class="currency-secondary">~33 924 PLN</span></div>
+          </div>
+          <div class="summary-row">
+            <div>🏢 Prostory</div>
+            <div style="text-align: right;"><span class="currency-primary">57 171 CZK</span><br><span class="currency-secondary">~9 690 PLN</span></div>
+          </div>
+          <div class="summary-row">
+            <div>🛏️ Ubytování</div>
+            <div style="text-align: right;"><span class="currency-primary">256 473 CZK</span><br><span class="currency-secondary">~43 470 PLN</span></div>
+          </div>
+          
+          <div class="summary-total">
+            <div>Celkem</div>
+            <div style="text-align: right;"><span class="currency-primary">513 795 CZK</span><br><span class="currency-secondary">~87 084 PLN</span></div>
+          </div>
+
+          <div class="attachments-box">
+            <h3 class="attachments-title">📎 Přílohy k nabídce</h3>
+            <div class="attachment-list">
+              <a href="#" target="_blank" class="attachment-link">📄 Originální kalkulace (PDF)</a>
+            </div>
+          </div>
+
+          <button class="btn-toggle" onclick="toggleDetails('hotel4', this)">Zobrazit detail</button>
+        </div>
+
+        <div class="details-section" id="hotel4">
+          <div class="card card-ubytovani">
+            <h3 class="section-title">
+              <div>🛏️ Ubytování <span class="section-subtitle">1 noc</span></div>
+              <div class="section-title-sum">256 473 CZK</div>
+            </h3>
+            <div class="item-row">
+              <div class="item-details"><div class="item-name">Jednolůžkový pokoj</div><div class="item-desc">80 pok. • 2 549 CZK/noc</div></div>
+              <div class="item-price-box"><div class="item-price-val">203 904 CZK</div></div>
+            </div>
+            <div class="item-row">
+              <div class="item-details"><div class="item-name">Dvoulůžkový pokoj</div><div class="item-desc">15 pok. • 3 505 CZK/noc</div></div>
+              <div class="item-price-box"><div class="item-price-val">52 569 CZK</div></div>
+            </div>
+          </div>
+
+          <div class="card card-prostory">
+            <h3 class="section-title">
+              <div>🏢 Prostory <span class="section-subtitle">2 dny</span></div>
+              <div class="section-title-sum">57 171 CZK</div>
+            </h3>
+            <div class="item-row">
+              <div class="item-details"><div class="item-name">Sál (17. 9.)</div><div class="item-desc">Celodenní prenájom sály</div></div>
+              <div class="item-price-box"><div class="item-price-val">17 700 CZK</div></div>
+            </div>
+            <div class="item-row">
+              <div class="item-details"><div class="item-name">Večerní program (17. 9.)</div><div class="item-desc">Prenájom sály pre večernú zábavu</div></div>
+              <div class="item-price-box"><div class="item-price-val">21 771 CZK</div></div>
+            </div>
+            <div class="item-row">
+              <div class="item-details"><div class="item-name">Sál (18. 9.)</div><div class="item-desc">Půldenní prenájom sály</div></div>
+              <div class="item-price-box"><div class="item-price-val">17 700 CZK</div></div>
+            </div>
+          </div>
+
+          <div class="card card-stravovani">
+            <h3 class="section-title">
+              <div>🍽️ Stravování <span class="section-subtitle">110 porcí</span></div>
+              <div class="section-title-sum">200 152 CZK</div>
+            </h3>
+            
+            <div class="date-separator">📅 17. 9. 2026</div>
+            <div class="item-row">
+              <div class="item-details"><div class="item-name">Coffee breaky (2x)</div><div class="item-desc">277 CZK (~47 PLN) / os. (do 4h)</div></div>
+              <div class="item-price-box"><div class="item-price-val">30 471 CZK</div></div>
+            </div>
+            <div class="item-row">
+              <div class="item-details"><div class="item-name">Oběd (bufet) + nápoje</div><div class="item-desc">701 CZK (~119 PLN) / os.</div></div>
+              <div class="item-price-box"><div class="item-price-val">77 101 CZK</div></div>
+            </div>
+            <div class="item-row">
+              <div class="item-details"><div class="item-name">Odpolední coffee break</div><div class="item-desc">Zahrnuto v položce výše</div></div>
+              <div class="item-price-box"><div class="item-price-val" style="color: #2e7d32;">V ceně</div></div>
+            </div>
+            <div class="item-row">
+              <div class="item-details"><div class="item-name">Večeře (bufet) + nápoje</div><div class="item-desc">701 CZK (~119 PLN) / os.</div></div>
+              <div class="item-price-box"><div class="item-price-val">77 101 CZK</div></div>
+            </div>
+            
+            <div class="date-separator">📅 18. 9. 2026</div>
+            <div class="item-row">
+              <div class="item-details"><div class="item-name">Snídaně</div><div class="item-desc">V ceně ubytování</div></div>
+              <div class="item-price-box"><div class="item-price-val" style="color: #2e7d32;">Zdarma</div></div>
+            </div>
+            <div class="item-row">
+              <div class="item-details"><div class="item-name">Dop. coffee break (do 40 min)</div><div class="item-desc">141 CZK (~24 PLN) / os.</div></div>
+              <div class="item-price-box"><div class="item-price-val">15 479 CZK</div></div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -555,6 +669,13 @@
         'Elements_3.jpg',
         'Elements_4.jpg',
         'Elements_5.jpg'
+      ],
+      'golebiewski': [
+        'Golebiewski_1.jpg',
+        'Golebiewski_2.jpg',
+        'Golebiewski_3.jpg',
+        'Golebiewski_4.jpg',
+        'Golebiewski_5.jpg'
       ]
     };
 
